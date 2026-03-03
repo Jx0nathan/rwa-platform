@@ -1,299 +1,299 @@
-# RWA Platform — Product Requirements Document
+# RWA Platform — 产品需求文档
 
-> Version: 1.0 | Status: Draft | Author: Jx0nathan
-
----
-
-## 1. Vision & Positioning
-
-**One-line**: A permissionless RWA-as-a-Service platform that turns traditional financial strategies into composable, yield-bearing on-chain assets.
-
-**Core Thesis**: The first wave of RWA was about putting assets on-chain. The second wave is about making those assets *do something* — generating verifiable, sustainable yield that DeFi users can trust without reading a 50-page prospectus.
-
-**Not building**: Another static tokenization wrapper.  
-**Building**: On-chain yield infrastructure where every product has a transparent NAV, a real redemption path, and a verifiable underlying strategy.
+> 版本：1.0 | 状态：草稿 | 作者：Jx0nathan
 
 ---
 
-## 2. Problem Statement
+## 1. 产品愿景与定位
 
-| Pain Point | Who Feels It | Current Workaround |
+**一句话定义**：一个无需许可的 RWA 即服务平台，将传统金融策略转化为可组合的、链上生息资产。
+
+**核心逻辑**：RWA 的第一波浪潮是「把资产放上链」。第二波是让这些资产「产生作用」——创造可验证、可持续的链上收益，让 DeFi 用户无需阅读 50 页招募书就能信任。
+
+**不是在做**：又一个静态代币化包装器。
+**在做的是**：链上收益基础设施——每个产品都有透明 NAV、真实赎回路径、可验证的底层策略。
+
+---
+
+## 2. 问题陈述
+
+| 痛点 | 受影响方 | 现有解决方式 |
 |---|---|---|
-| $300B+ stablecoin supply earns ~0% | DeFi users | Manual bridging to CeFi |
-| Institutional yield strategies inaccessible to retail | Retail investors | Can't access (min $1M+) |
-| RWA tokens illiquid after issuance | RWA holders | Wait and hope |
-| Asset managers can't reach on-chain capital | TradFi funds | None |
-| No standard for on-chain fund compliance | Regulators | Manual compliance checks |
+| 3000 亿美元以上稳定币存量收益近乎为零 | DeFi 用户 | 手动跨链到 CeFi |
+| 机构级收益策略对零售用户不可及（最低百万美元起） | 零售投资者 | 无法进入 |
+| RWA 代币发行后流动性极差 | RWA 持有者 | 被动等待 |
+| 资产管理人无法触达链上资本 | 传统基金管理人 | 无解 |
+| 链上基金合规缺乏统一标准 | 监管机构 | 人工逐一核查 |
 
 ---
 
-## 3. Product Architecture
+## 3. 产品架构
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    USER INTERFACES                        │
-│         Web App  │  API  │  DeFi Protocol Integration    │
+│                      用户界面层                           │
+│         Web 应用  │  API  │  DeFi 协议集成               │
 └──────────────────────────┬───────────────────────────────┘
                            │
 ┌──────────────────────────▼───────────────────────────────┐
-│                   PLATFORM LAYER                          │
-│   Product Registry │ NAV Engine │ Compliance Module       │
+│                      平台层                               │
+│   产品注册表 │ NAV 引擎 │ 合规模块                        │
 └──────────────────────────┬───────────────────────────────┘
                            │
 ┌──────────────────────────▼───────────────────────────────┐
-│                   SMART CONTRACT LAYER                    │
+│                    智能合约层                              │
 │  RWAFactory │ RWAVault │ RWAToken │ NAVOracle            │
 └──────────────────────────┬───────────────────────────────┘
                            │
 ┌──────────────────────────▼───────────────────────────────┐
-│                OFF-CHAIN ASSET LAYER                      │
-│    SPV  │  Custodian  │  Fund Administrator  │  Auditor   │
+│                    链下资产层                              │
+│    SPV 实体  │  托管行  │  基金行政管理人  │  审计机构     │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Product Lines (MVP → V2)
+## 4. 产品线（MVP → V2）
 
-### 4.1 CASH+ (MVP)
+### 4.1 CASH+（MVP）
 
-**What**: Money market fund token, pegged 1:1 to USD, backed by US T-Bills + high-grade agency paper.
+**定义**：货币市场基金代币，与美元 1:1 挂钩，底层资产为美国国债及高评级机构债券。
 
-| Attribute | Value |
+| 属性 | 说明 |
 |---|---|
-| Target yield | 4–5% APY |
-| Redemption | T+1 (24h) |
-| Minimum | None (permissionless) |
-| KYC | None for < $10K, soft KYC above |
-| Token standard | ERC-20 (NAV-based) |
-| Underlying | USD money market fund managed by licensed asset manager |
-| Chain | HashKey Chain (primary) + Ethereum (L1 bridge) |
+| 目标收益率 | 4–5% APY |
+| 赎回周期 | T+1（24 小时） |
+| 最低认购额 | 无限制（无需许可） |
+| KYC 要求 | 1 万美元以下免 KYC，以上需软 KYC |
+| 代币标准 | ERC-20（NAV 计价） |
+| 底层资产 | 持牌资产管理人管理的美元货币市场基金 |
+| 支持链 | HashKey Chain（主链）+ 以太坊（L1 桥接） |
 
-**User Flow**:
+**用户流程**：
 ```
-User deposits USDT → Vault contract routes to custodian → 
-Custodian buys T-Bills → NAV oracle updates price → 
-User receives CASH+ tokens at current NAV
+用户存入 USDT → Vault 合约路由至托管行
+→ 托管行买入国债 → NAV 预言机更新价格
+→ 用户按当前 NAV 价格收到 CASH+ 代币
 ```
 
-### 4.2 AoABT — Funding Rate Arbitrage Fund (V1)
+### 4.2 AoABT — 资金费率套利基金（V1）
 
-**What**: Tokenized hedge fund capturing funding rate spread between CEX perpetuals and spot.
+**定义**：代币化对冲基金，捕获中心化交易所永续合约与现货之间的资金费率价差。
 
-| Attribute | Value |
+| 属性 | 说明 |
 |---|---|
-| Target yield | 12–18% APY |
-| Strategy | Long spot + Short perp, delta-neutral |
-| Historical drawdown | < 1% (5y backtest) |
-| Minimum | $100,000 USDT (professional investor) |
-| Redemption | T+7 (weekly) |
-| Token standard | ERC-20 (NAV-based, variable price) |
+| 目标收益率 | 12–18% APY |
+| 策略逻辑 | 现货多头 + 永续空头，Delta 中性 |
+| 历史最大回撤 | < 1%（5 年回测） |
+| 最低认购额 | 100,000 USDT（专业投资者） |
+| 赎回周期 | T+7（每周） |
+| 代币标准 | ERC-20（NAV 计价，浮动价格） |
 
-### 4.3 BOND+ (V1)
+### 4.3 BOND+（V1）
 
-**What**: Tokenized bond ETF exposure.
+**定义**：代币化债券 ETF 敞口。
 
-| Attribute | Value |
+| 属性 | 说明 |
 |---|---|
-| Target yield | 5–7% APY |
-| Minimum | $1,000 USDT |
-| Redemption | T+3 |
+| 目标收益率 | 5–7% APY |
+| 最低认购额 | 1,000 USDT |
+| 赎回周期 | T+3 |
 
-### 4.4 EQUITY+ (V2)
+### 4.4 EQUITY+（V2）
 
-**What**: Tokenized US equity ETF — 24/7 trading on-chain.
+**定义**：代币化美股 ETF，支持链上 7×24 小时交易。
 
-### 4.5 PRIVATE+ (V2)
+### 4.5 PRIVATE+（V2）
 
-**What**: Tokenized private equity fund shares. Institutional-only, locked 2-year minimum.
+**定义**：代币化私募股权基金份额，仅限机构投资者，最短锁定期 2 年。
 
 ---
 
-## 5. Core Technical Requirements
+## 5. 核心技术需求
 
-### 5.1 Smart Contracts
+### 5.1 智能合约
 
 #### RWAToken
-- ERC-20 compatible
-- NAV-priced: token value = totalAssets / totalSupply
-- Minting controlled by RWAVault only
-- Role-based access control (RBAC)
-- Pausable (emergency stop)
-- Blacklist/whitelist support for compliance
+- 兼容 ERC-20 标准
+- NAV 定价：代币价值 = 总资产 / 总供应量
+- 铸币权仅限 RWAVault 合约持有
+- 基于角色的访问控制（RBAC）
+- 可暂停（紧急停止机制）
+- 支持黑名单 / 白名单（满足合规需求）
 
 #### RWAVault
-- Accept USDT/USDC deposits
-- Mint RWAToken proportional to current NAV
-- Handle redemption queue (T+1 to T+7 depending on product)
-- Emergency withdrawal mechanism
-- Fee calculation (management fee, performance fee)
+- 接受 USDT/USDC 存款
+- 按当前 NAV 比例铸造 RWAToken
+- 管理赎回队列（T+1 至 T+7，按产品类型）
+- 紧急提款机制
+- 费用计算（管理费、绩效费）
 
 #### NAVOracle
-- Accept price updates from authorized oracle nodes
-- TWAP calculation (prevent flash loan manipulation)
-- Heartbeat check (revert if price stale > 24h)
-- Multi-sig update for large NAV deviations (> 5%)
+- 接受授权预言机节点推送的价格更新
+- TWAP 计算（防止闪电贷操纵）
+- 心跳检查（价格超过 36 小时未更新则标记为无效）
+- 大幅 NAV 偏差（> 5%）需多签确认
 
 #### RWAFactory
-- Deploy new product vaults permissionlessly (within approved asset classes)
-- Register products on-chain
-- Emit events for indexers
+- 在已批准资产类别范围内无需许可地部署新产品 Vault
+- 链上注册产品
+- 向索引器发出事件
 
 #### SPVRegistry
-- Map each product to its legal SPV entity
-- Store custodian, auditor, fund admin addresses (off-chain identifiers)
-- Compliance attestation timestamps
+- 将每个产品映射至其法律 SPV 实体
+- 存储托管行、审计机构、基金行政管理人地址（链下标识符）
+- 合规认证时间戳记录
 
-### 5.2 NAV Calculation (Off-Chain)
-
-```
-NAV = (Cash + MarketValueOfAssets - Liabilities - AccruedFees) / TotalShares
-
-Updated: Every 24h (business days) via oracle push
-Emergency update: If NAV deviates > 3% intraday
-```
-
-### 5.3 Redemption Engine
+### 5.2 NAV 计算（链下）
 
 ```
-T+0: User submits redemption request on-chain
-T+0: Vault locks tokens, emits RedemptionQueued event
-T+0 → T+N: Backend processes redemption off-chain (sells assets)
-T+N: Backend calls fulfillRedemption(), transfers USDT to user
-T+N: Tokens burned
+NAV = (现金 + 资产市值 - 负债 - 应计费用) / 总份额数
+
+更新频率：每个工作日 24 小时推送一次
+紧急更新：日内 NAV 偏差 > 3% 时触发
 ```
 
-### 5.4 Compliance Module
+### 5.3 赎回引擎
 
-- Jurisdiction blocklist (OFAC, etc.)
-- Wallet screening via Chainalysis API hook
-- Transaction size limits per tier
-- KYC tier thresholds configurable per product
+```
+T+0：用户链上提交赎回申请
+T+0：Vault 锁定代币，触发 RedemptionQueued 事件
+T+0 → T+N：后端链下处理赎回（卖出底层资产）
+T+N：后端调用 fulfillRedemption()，将 USDT 转给用户
+T+N：代币销毁
+```
+
+### 5.4 合规模块
+
+- 司法管辖区黑名单（OFAC 等制裁名单）
+- 通过 Chainalysis API 进行钱包地址筛查
+- 按层级配置单笔交易限额
+- 每个产品的 KYC 层级阈值可独立配置
 
 ---
 
-## 6. API Specification
+## 6. API 规范
 
-### Products
+### 产品接口
 
 ```
 GET /api/v1/products
-→ List all active products with current NAV, APY, TVL
+→ 列出所有活跃产品，含当前 NAV、APY、TVL
 
 GET /api/v1/products/:id
-→ Full product details including underlying asset breakdown
+→ 完整产品详情，含底层资产构成明细
 
 GET /api/v1/products/:id/nav-history
-→ Historical NAV data (daily, up to 2 years)
+→ 历史 NAV 数据（每日，最长 2 年）
 ```
 
-### Positions
+### 持仓接口
 
 ```
 GET /api/v1/positions/:wallet
-→ All RWA token balances for a wallet with USD value
+→ 钱包所持所有 RWA 代币余额及对应美元估值
 
 GET /api/v1/positions/:wallet/yield-history
-→ Yield earned over time
+→ 随时间累计的收益记录
 ```
 
-### Transactions
+### 交易接口
 
 ```
 POST /api/v1/subscribe
-Body: { productId, amount, walletAddress }
-→ Returns: tx calldata to sign and broadcast
+请求体：{ productId, amount, walletAddress }
+→ 返回：待签名并广播的交易 calldata
 
 POST /api/v1/redeem
-Body: { productId, shares, walletAddress }
-→ Returns: tx calldata + estimated settlement time
+请求体：{ productId, shares, walletAddress }
+→ 返回：交易 calldata + 预计结算时间
 
 GET /api/v1/transactions/:wallet
-→ Transaction history
+→ 交易历史记录
 ```
 
-### Admin (Permissioned)
+### 管理接口（需权限）
 
 ```
 POST /api/v1/admin/nav-update
-→ Push new NAV to oracle contract
+→ 向预言机合约推送新 NAV
 
 POST /api/v1/admin/fulfill-redemptions
-→ Batch fulfill pending redemptions
+→ 批量处理待结算赎回申请
 ```
 
 ---
 
-## 7. User Stories
+## 7. 用户故事
 
-### Retail User (DeFi native)
+### 零售用户（DeFi 原生）
 ```
-As a DeFi user with idle USDC,
-I want to deposit into CASH+ and earn 4-5% yield
-without reading any legal documents or completing KYC
-so that my stablecoins work for me 24/7.
-```
-
-### Professional Investor
-```
-As an accredited investor,
-I want to access the AoABT funding rate arbitrage strategy
-with a minimum of $100K USDT
-so that I can earn institutional-grade returns on-chain
-with full transparency of the underlying strategy.
+作为一名持有闲置 USDC 的 DeFi 用户，
+我希望存入 CASH+ 获得 4-5% 的年化收益，
+无需阅读任何法律文件或完成 KYC 认证，
+从而让我的稳定币 7×24 小时持续为我工作。
 ```
 
-### DeFi Protocol (B2B)
+### 专业投资者
 ```
-As a lending protocol,
-I want to accept CASH+ tokens as collateral
-because they are yield-bearing, low-volatility assets
-that improve the capital efficiency of my protocol.
+作为一名合格投资者，
+我希望以最低 10 万 USDT 的门槛
+进入 AoABT 资金费率套利策略，
+从而在链上获取机构级收益，
+同时享有底层策略的完整透明度。
 ```
 
-### Asset Manager
+### DeFi 协议（B2B）
 ```
-As a traditional fund manager,
-I want to tokenize my money market fund
-using this platform's SPV + smart contract framework
-so that I can reach on-chain capital without building
-my own blockchain infrastructure.
+作为一家借贷协议，
+我希望将 CASH+ 代币作为抵押品接受，
+因为它是生息的、低波动的资产，
+能提升我协议的资本使用效率。
+```
+
+### 资产管理人
+```
+作为一家传统基金管理人，
+我希望通过本平台的 SPV + 智能合约框架
+将旗下货币市场基金代币化，
+从而触达链上资本，
+无需自建区块链基础设施。
 ```
 
 ---
 
-## 8. Risk Framework
+## 8. 风险框架
 
-| Risk | Mitigation |
+| 风险类型 | 应对措施 |
 |---|---|
-| Smart contract exploit | Audit (2 independent firms) + bug bounty |
-| Oracle manipulation | TWAP + multi-sig for large updates |
-| Custodian failure | Bankruptcy-remote SPV + insurance |
-| Liquidity crisis (redemption rush) | Redemption queue + liquidity reserve (10% of TVL) |
-| Regulatory action | Jurisdiction filters + legal opinions per market |
-| NAV calculation error | Dual calculation (on-chain + off-chain cross-check) |
+| 智能合约漏洞 | 两家独立机构审计 + 漏洞赏金计划 |
+| 预言机价格操纵 | TWAP 机制 + 大幅更新多签确认 |
+| 托管行破产 | 破产隔离 SPV 架构 + 保险 |
+| 流动性危机（集中赎回） | 赎回队列 + 10% TVL 流动性准备金 |
+| 监管行动 | 司法管辖区过滤 + 各市场独立法律意见 |
+| NAV 计算错误 | 双重核算机制（链上 + 链下交叉验证） |
 
 ---
 
-## 9. Milestones
+## 9. 里程碑计划
 
-| Phase | Target | Key Deliverable |
+| 阶段 | 目标时间 | 关键交付物 |
 |---|---|---|
-| MVP | Month 1-2 | CASH+ live on testnet, full audit |
-| V1 | Month 3-4 | AoABT + BOND+ live on mainnet (HashKey Chain) |
-| V1.5 | Month 5-6 | DeFi protocol integrations (Aave-style lending) |
-| V2 | Month 7-9 | EQUITY+ + multi-chain (Ethereum L1) |
-| V3 | Month 10-12 | Permissionless asset manager onboarding |
+| MVP | 第 1–2 个月 | CASH+ 上测试网，完成全套审计 |
+| V1 | 第 3–4 个月 | AoABT + BOND+ 上 HashKey Chain 主网 |
+| V1.5 | 第 5–6 个月 | DeFi 协议集成（Aave 风格借贷） |
+| V2 | 第 7–9 个月 | EQUITY+ 上线 + 多链扩展（以太坊 L1） |
+| V3 | 第 10–12 个月 | 资产管理人无需许可自助上架 |
 
 ---
 
-## 10. Success Metrics
+## 10. 成功指标
 
-| Metric | 6-Month Target |
+| 指标 | 6 个月目标 |
 |---|---|
-| TVL | $10M |
-| Active wallets | 1,000 |
-| Products live | 3 (CASH+, AoABT, BOND+) |
-| DeFi protocol integrations | 2 |
-| Redemption SLA breach rate | < 1% |
-| Smart contract incidents | 0 |
+| TVL | 1000 万美元 |
+| 活跃钱包数 | 1,000 |
+| 上线产品数 | 3 个（CASH+、AoABT、BOND+） |
+| DeFi 协议集成数 | 2 个 |
+| 赎回 SLA 违约率 | < 1% |
+| 智能合约安全事故 | 0 |
